@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Immersive Companion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="game-container"></div>
+    
+    <div id="ui-overlay">
+        <header id="status-hud">
+            <div class="stat-bar mood-stat">
+                <span class="stat-icon">🌟</span>
+                <div class="bar-bg"><div class="bar-fill mood-bar" id="bar-mood" style="width: 100%;"></div></div>
+            </div>
+            <div class="stat-bar energy-stat">
+                <span class="stat-icon">⚡</span>
+                <div class="bar-bg"><div class="bar-fill energy-bar" id="bar-energy" style="width: 100%;"></div></div>
+            </div>
+            <div class="stat-bar hunger-stat">
+                <span class="stat-icon">🍰</span>
+                <div class="bar-bg"><div class="bar-fill hunger-bar" id="bar-hunger" style="width: 50%;"></div></div>
+            </div>
+        </header>
+
+        <div id="pet-speech-bubble" class="hidden">Hiii! ✨</div>
+
+        <div id="chat-container">
+            <div id="chat-history"></div>
+        </div>
+
+        <footer id="interactive-dock">
+            <div class="action-buttons">
+                <button id="btn-feed" class="action-btn pink-btn">
+                    <span class="icon">🍰</span><span class="label">Feed</span>
+                </button>
+                <button id="btn-play" class="action-btn blue-btn">
+                    <span class="icon">🎈</span><span class="label">Play</span>
+                </button>
+                <button id="btn-dance" class="action-btn purple-btn">
+                    <span class="icon">🎵</span><span class="label">Dance</span>
+                </button>
+                <button id="btn-pet" class="action-btn green-btn">
+                    <span class="icon">✨</span><span class="label">Pet</span>
+                </button>
+                <button id="btn-sleep" class="action-btn yellow-btn">
+                    <span class="icon">💤</span><span class="label">Sleep</span>
+                </button>
+                <button id="btn-follow" class="action-btn cyan-btn">
+                    <span class="icon">👀</span><span class="label">Follow</span>
+                </button>
+            </div>
+            
+            <div class="chat-input-wrapper">
+                <button id="btn-voice" class="voice-btn">🎤</button>
+                <input type="text" id="chat-input" placeholder="Say hi..." autocomplete="off">
+                <button id="btn-submit" class="submit-btn" title="Send">➤</button>
+            </div>
+        </footer>
+    </div>
+    
+    <script type="module" src="main.js"></script>
+</body>
+</html>
