@@ -1,6 +1,6 @@
 # Digital Pet AI
 
-A 2026 hackathon project: an interactive digital pet companion that learns from your voice and chat, reacts in real time, and evolves through play.
+A South City International School submission for X-Hack: an interactive digital pet companion that learns from your voice and chat, reacts in real time, and evolves through play.
 
 ## What it does
 

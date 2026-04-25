@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Digital Pet AI — Interactive Companion 2026</title>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     
     <script type="importmap">
@@ -20,28 +20,37 @@
     <div id="game-container"></div>
     
     <div id="ui-overlay">
-        <div id="app-title" style="pointer-events: auto; padding: 20px 25px 0; text-align: left;">
-            <h1 style="margin:0;font-size:1.7rem;letter-spacing:0.02em;">Digital Pet Companion</h1>
-            <p style="margin:8px 0 0;font-size:1rem;max-width:560px;opacity:0.9;">A responsive AI pet experience for the 2026 hackathon: learn, play, care, and evolve with your virtual companion.</p>
-            <div id="pet-stage-label" class="stat-bar" style="margin-top:12px;max-width:420px;">Stage: Awakening spark</div>
-            <div id="pet-emotion-label" class="stat-bar" style="margin-top:8px;max-width:420px;">Emotion: Content</div>
+        <div id="app-title" style="pointer-events: auto; padding: 20px 25px 0; text-align: left; position: relative;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1 style="margin:0;font-size:1.7rem;letter-spacing:0.02em;">Digital Pet Companion</h1>
+                    <p style="margin:8px 0 0;font-size:1rem;max-width:560px;opacity:0.9;">A responsive AI companion designed to learn, play, and grow alongside you.</p>
+                    <p style="margin:4px 0 0;font-size:0.85rem;opacity:0.7;font-style:italic;">A South City International School submission for X-Hack.</p>
+                </div>
+                <button id="btn-help" class="help-btn" title="Features and Information" style="pointer-events: auto;">?</button>
+            </div>
+            <div id="pet-stage-label" class="stat-bar" style="margin-top:12px;max-width:420px;border-color:rgba(168,85,247,0.5);">Growth Stage: First spark of life</div>
+            <div id="pet-emotion-label" class="stat-bar" style="margin-top:8px;max-width:420px;border-color:rgba(139,92,246,0.5);">Current Emotion: Peaceful</div>
+            <div id="pet-level-label" class="stat-bar" style="margin-top:8px;max-width:420px;border-color:rgba(250,204,21,0.6);">Current Level: 1 (0/100 EXP)</div>
+            <div id="weather-label" class="stat-bar" style="margin-top:8px;max-width:420px;border-color:rgba(59,130,246,0.6);">Environment: Fetching...</div>
+            <div id="bonus-label" class="stat-bar hidden" style="margin-top:8px;max-width:420px;border-color:rgba(236,72,153,0.8);background:rgba(236,72,153,0.15);">Active Status: Well-loved</div>
         </div>
         <header id="status-hud">
             <div class="stat-bar mood-stat">
-                <span class="stat-icon">🌟</span>
+                <span class="stat-icon" style="font-size:0.9rem;font-weight:bold;">Mood</span>
                 <div class="bar-bg"><div class="bar-fill mood-bar" id="bar-mood" style="width: 100%;"></div></div>
             </div>
             <div class="stat-bar energy-stat">
-                <span class="stat-icon">⚡</span>
+                <span class="stat-icon" style="font-size:0.9rem;font-weight:bold;">Energy</span>
                 <div class="bar-bg"><div class="bar-fill energy-bar" id="bar-energy" style="width: 100%;"></div></div>
             </div>
             <div class="stat-bar hunger-stat">
-                <span class="stat-icon">🍰</span>
+                <span class="stat-icon" style="font-size:0.9rem;font-weight:bold;">Hunger</span>
                 <div class="bar-bg"><div class="bar-fill hunger-bar" id="bar-hunger" style="width: 50%;"></div></div>
             </div>
         </header>
 
-        <div id="pet-speech-bubble" class="hidden">Hiii! ✨</div>
+        <div id="pet-speech-bubble" class="hidden">Hello.</div>
 
         <div id="chat-container">
             <div id="chat-history"></div>
@@ -50,33 +59,52 @@
         <footer id="interactive-dock">
             <div class="action-buttons">
                 <button id="btn-feed" class="action-btn pink-btn">
-                    <span class="icon">🍰</span><span class="label">Feed</span>
+                    <span class="label">Feed</span>
                 </button>
                 <button id="btn-play" class="action-btn blue-btn">
-                    <span class="icon">🎈</span><span class="label">Play</span>
+                    <span class="label">Play</span>
                 </button>
                 <button id="btn-dance" class="action-btn purple-btn">
-                    <span class="icon">🎵</span><span class="label">Dance</span>
+                    <span class="label">Dance</span>
                 </button>
                 <button id="btn-pet" class="action-btn green-btn">
-                    <span class="icon">✨</span><span class="label">Pet</span>
+                    <span class="label">Pet</span>
                 </button>
                 <button id="btn-sleep" class="action-btn yellow-btn">
-                    <span class="icon">💤</span><span class="label">Sleep</span>
+                    <span class="label">Sleep</span>
                 </button>
                 <button id="btn-follow" class="action-btn cyan-btn">
-                    <span class="icon">👀</span><span class="label">Follow</span>
+                    <span class="label">Follow</span>
+                </button>
+                <button id="btn-style" class="action-btn orange-btn">
+                    <span class="label">Style</span>
                 </button>
             </div>
             
             <div class="chat-input-wrapper">
-                <button id="btn-voice" class="voice-btn">🎤</button>
-                <input type="text" id="chat-input" placeholder="Say hi..." autocomplete="off">
-                <button id="btn-submit" class="submit-btn" title="Send">➤</button>
+                <button id="btn-voice" class="voice-btn">Talk</button>
+                <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off">
+                <button id="btn-submit" class="submit-btn" title="Send">Send</button>
             </div>
         </footer>
     </div>
     
+    <div id="help-modal" class="modal hidden" style="pointer-events: auto;">
+        <div class="modal-content">
+            <span id="close-help" class="close-btn">&times;</span>
+            <h2 style="margin-top: 0; color: #c4b5fd;">Companion Features</h2>
+            <ul style="line-height: 1.8; font-size: 1.1rem; list-style-type: none; padding-left: 0;">
+                <li><strong>Voice and Audio:</strong> Use the Talk button to speak naturally, or play music to see the pet react.</li>
+                <li><strong>Chat:</strong> Engage in conversation to interact with the pet's unique personality.</li>
+                <li><strong>Follow Mode:</strong> Enable the Follow feature to have the pet watch your movements.</li>
+                <li><strong>Dance:</strong> Activate the Dance command for a synchronized animation.</li>
+                <li><strong>Care:</strong> Monitor the pet's vitals and provide care to ensure its well-being.</li>
+                <li><strong>Growth:</strong> The pet's personality and stage evolve based on your interactions.</li>
+            </ul>
+            <hr style="border-color: rgba(139, 92, 246, 0.3); margin: 20px 0;">
+            <p style="font-size: 0.9rem; text-align: center; opacity: 0.8;">South City International School's submission for X-Hack.</p>
+        </div>
+    </div>
     <script type="module" src="main.js"></script>
 </body>
 </html>

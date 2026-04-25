@@ -109,7 +109,7 @@ export function initChat() {
 
         const typingMsg = document.createElement('div');
         typingMsg.className = 'chat-msg pet-msg';
-        typingMsg.innerText = "Learning from your words...";
+        typingMsg.innerText = "The companion is reflecting on your message...";
         chatDisplay.appendChild(typingMsg);
         scrollToBottom();
 
@@ -135,12 +135,13 @@ export function initChat() {
             let replyText = data.reply;
             let actionType = "none";
             let sentimentLabel = null;
+            let sentimentScore = 0;
             try {
-                // OpenAI returns a JSON string in data.reply due to response_format: "json_object"
                 const parsed = JSON.parse(data.reply);
                 if (parsed.message) replyText = parsed.message;
                 if (parsed.action) actionType = parsed.action;
                 if (parsed.sentiment) sentimentLabel = parsed.sentiment;
+                if (parsed.sentiment_score !== undefined) sentimentScore = Number(parsed.sentiment_score);
             } catch(e) { 
                 console.warn("Failed to parse JSON response, falling back to raw text", e); 
             }
@@ -150,10 +151,11 @@ export function initChat() {
             }
 
             if (sentimentLabel) {
-                const sentimentDeltas = mapSentimentToDeltas(sentimentLabel);
-                state.mood = Math.min(100, Math.max(0, state.mood + sentimentDeltas.moodDelta));
-                state.affection = Math.min(100, Math.max(0, state.affection + sentimentDeltas.affectionDelta));
-                state.energy = Math.min(100, Math.max(0, state.energy + sentimentDeltas.energyDelta));
+                // Apply AI-based numerical impact
+                state.mood = Math.min(100, Math.max(0, state.mood + sentimentScore));
+                state.affection = Math.min(100, Math.max(0, state.affection + (sentimentScore * 0.5)));
+                
+                // Set the qualitative emotion
                 state.currentEmotion = mapSentimentToEmotion(sentimentLabel);
                 localStorage.setItem('pet_emotion', state.currentEmotion);
             } else {
@@ -199,7 +201,7 @@ export function initChat() {
             
             const bubble = document.getElementById('pet-speech-bubble');
             if(bubble) {
-                bubble.innerText = "I learned something new! ✨";
+                bubble.innerText = "The companion is growing through this interaction.";
                 bubble.classList.remove('hidden');
                 clearTimeout(bubble.timeoutId);
                 bubble.timeoutId = setTimeout(() => bubble.classList.add('hidden'), 6000);

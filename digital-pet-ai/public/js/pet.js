@@ -12,6 +12,15 @@ body.position.y = 1.4;
 body.castShadow = true;
 petGroup.add(body);
 
+const styles = {
+    'Default': { bodyColor: 0xffffff, metalness: 0.3, roughness: 0.2, emission: 0x06b6d4 },
+    'Neon': { bodyColor: 0x0f172a, metalness: 0.9, roughness: 0.1, emission: 0x38bdf8 },
+    'Gold': { bodyColor: 0xfacc15, metalness: 1.0, roughness: 0.1, emission: 0xf59e0b },
+    'Stellar': { bodyColor: 0x581c87, metalness: 0.8, roughness: 0.2, emission: 0xc4b5fd }
+};
+
+let currentStyleName = 'Default';
+
 const ringGeo = new THREE.TorusGeometry(1.2, 0.05, 16, 64);
 const ringMat = new THREE.MeshStandardMaterial({ color: 0x06b6d4, emissive: 0x06b6d4, emissiveIntensity: 1.0 });
 const energyRing = new THREE.Mesh(ringGeo, ringMat);
@@ -109,6 +118,19 @@ export function toggleFollowCursor() {
 }
 
 export function updatePet(delta, petState) {
+    // Apply current style
+    const unlocked = petState.unlockedStyles;
+    const styleIdx = (petState.styleIndex || 0) % unlocked.length;
+    const styleName = unlocked[styleIdx];
+    
+    if (styleName !== currentStyleName) {
+        currentStyleName = styleName;
+        const s = styles[styleName];
+        bodyMat.color.setHex(s.bodyColor);
+        bodyMat.metalness = s.metalness;
+        bodyMat.roughness = s.roughness;
+    }
+
     timeValue += delta;
     if(actionTimer > 0) {
         actionTimer -= delta;
@@ -127,10 +149,24 @@ export function updatePet(delta, petState) {
 
     energyRing.rotation.z += delta * 2.0;
     aura.rotation.y -= delta * 0.5;
-    aura.material.opacity = 0.28 + petState.learning * 0.003;
+    
+    // Growth-based scaling and effects
+    let growthScale = 1.0;
+    let emissionBoost = 1.0;
+    if (petState.growthStage === "Young Companion") {
+        growthScale = 1.2;
+        emissionBoost = 1.4;
+    } else if (petState.growthStage === "Fully Evolved") {
+        growthScale = 1.45;
+        emissionBoost = 1.8;
+    }
+    
+    petGroup.scale.lerp(new THREE.Vector3(growthScale, growthScale, growthScale), 0.05);
+
+    aura.material.opacity = (0.28 + petState.learning * 0.003) * emissionBoost;
     aura.scale.setScalar(1 + petState.affection * 0.002);
     energyRing.scale.lerp(new THREE.Vector3(1 + petState.learning * 0.002, 1 + petState.learning * 0.002, 1 + petState.learning * 0.002), 0.02);
-    ringMat.emissiveIntensity = 1.0 + petState.learning * 0.02;
+    ringMat.emissiveIntensity = (1.0 + petState.learning * 0.02) * emissionBoost;
 
     const emotion = petState.emotion || 'Content';
     let emotionColor = new THREE.Color(0x06b6d4);
