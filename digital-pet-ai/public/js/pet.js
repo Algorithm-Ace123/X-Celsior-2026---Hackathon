@@ -52,6 +52,13 @@ rightCheek.position.set(0.25, -0.05, 0.36);
 rightCheek.rotation.y = 0.4;
 facePlate.add(leftCheek, rightCheek);
 
+const mouthGeo = new THREE.TorusGeometry(0.18, 0.03, 16, 32, Math.PI);
+const mouthMat = new THREE.MeshStandardMaterial({ color: 0x7c3aed, emissive: 0x7c3aed, emissiveIntensity: 1.2 });
+const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+mouth.position.set(0, -0.18, 0.36);
+mouth.rotation.x = Math.PI;
+facePlate.add(mouth);
+
 const limbGeo = new THREE.CapsuleGeometry(0.2, 0.3, 4, 16);
 const leftHand = new THREE.Mesh(limbGeo, bodyMat);
 leftHand.castShadow = true;
@@ -120,11 +127,26 @@ export function updatePet(delta, petState) {
 
     energyRing.rotation.z += delta * 2.0;
     aura.rotation.y -= delta * 0.5;
+    aura.material.opacity = 0.28 + petState.learning * 0.003;
+    aura.scale.setScalar(1 + petState.affection * 0.002);
+    energyRing.scale.lerp(new THREE.Vector3(1 + petState.learning * 0.002, 1 + petState.learning * 0.002, 1 + petState.learning * 0.002), 0.02);
+    ringMat.emissiveIntensity = 1.0 + petState.learning * 0.02;
 
-    let targetC = new THREE.Color(0x06b6d4); 
-    if (petState.hunger < 30) targetC.setHex(0xf59e0b); 
-    if (petState.energy < 20) targetC.setHex(0x8b5cf6); 
-    if (petState.mood < 30) targetC.setHex(0xef4444); 
+    const emotion = petState.emotion || 'Content';
+    let emotionColor = new THREE.Color(0x06b6d4);
+    switch (emotion) {
+        case 'Joyful': emotionColor.setHex(0x38bdf8); break;
+        case 'Curious': emotionColor.setHex(0xa855f7); break;
+        case 'Tired': emotionColor.setHex(0x8b5cf6); break;
+        case 'Hungry': emotionColor.setHex(0xf97316); break;
+        case 'Sad': emotionColor.setHex(0xef4444); break;
+        case 'Lonely': emotionColor.setHex(0xf472b6); break;
+        default: emotionColor.setHex(0x06b6d4);
+    }
+    let targetC = emotionColor;
+    if (petState.hunger < 30) targetC = new THREE.Color(0xf59e0b);
+    if (petState.energy < 20) targetC = new THREE.Color(0x8b5cf6);
+    if (petState.mood < 30) targetC = new THREE.Color(0xef4444);
     
     eyeMat.color.lerp(targetC, 0.05);
     eyeMat.emissive.lerp(targetC, 0.05);
@@ -215,32 +237,95 @@ export function updatePet(delta, petState) {
         leftEye.scale.y = 0.1; rightEye.scale.y = 0.1; 
 
     } else {
-        body.rotation.z = 0;
-        const bounce = Math.sin(t * 2) * 0.15;
+        const emotion = petState.emotion || 'Content';
+        let idleBounce = 0.15;
+        let cheekPulse = 1.0;
+        let mouthY = 1.0;
+        let eyePulse = 1.0;
+        let headTilt = 0;
+
+        switch (emotion) {
+            case 'Joyful':
+                idleBounce = 0.25;
+                cheekPulse = 1.4;
+                mouthY = 1.2;
+                eyePulse = 1.15;
+                headTilt = Math.sin(t * 1.5) * 0.1;
+                body.rotation.z = Math.sin(t * 0.4) * 0.08;
+                break;
+            case 'Curious':
+                idleBounce = 0.12;
+                cheekPulse = 1.0;
+                mouthY = 0.9;
+                eyePulse = 1.1;
+                headTilt = Math.sin(t * 0.7) * 0.05;
+                body.rotation.z = Math.sin(t * 0.3) * 0.05;
+                break;
+            case 'Tired':
+                idleBounce = 0.05;
+                cheekPulse = 0.8;
+                mouthY = 0.25;
+                eyePulse = 0.6;
+                headTilt = -0.06;
+                body.rotation.z = -0.03;
+                break;
+            case 'Hungry':
+                idleBounce = 0.1;
+                cheekPulse = 0.9;
+                mouthY = -0.4;
+                eyePulse = 0.9;
+                headTilt = 0.02;
+                body.rotation.z = 0.02;
+                break;
+            case 'Sad':
+                idleBounce = 0.06;
+                cheekPulse = 0.7;
+                mouthY = -1.0;
+                eyePulse = 0.55;
+                headTilt = -0.12;
+                body.rotation.z = -0.05;
+                break;
+            case 'Lonely':
+                idleBounce = 0.08;
+                cheekPulse = 0.85;
+                mouthY = -0.6;
+                eyePulse = 0.8;
+                headTilt = -0.08;
+                body.rotation.z = -0.04;
+                break;
+            default:
+                body.rotation.z = 0;
+        }
+
+        const bounce = Math.sin(t * 2) * idleBounce;
         body.position.y = 1.4 + bounce;
-        
         body.rotation.y += (Math.sin(t * 0.5) * 0.2 - body.rotation.y) * 0.1;
-        facePlate.rotation.y = Math.sin(t * 0.8) * 0.1; 
-        
-        leftHand.position.set(-1.2, 1.2 + bounce*1.5, 0.2);
-        rightHand.position.set(1.2, 1.2 + bounce*1.5, 0.2);
-        
-        leftFoot.position.set(-0.5, 0.5 + bounce, 0.1 + Math.sin(t)*0.1);
+        facePlate.rotation.y = Math.sin(t * 0.8) * 0.1;
+        facePlate.rotation.z += (headTilt - facePlate.rotation.z) * 0.08;
+
+        leftHand.position.set(-1.2, 1.2 + bounce * 1.5, 0.2);
+        rightHand.position.set(1.2, 1.2 + bounce * 1.5, 0.2);
+
+        leftFoot.position.set(-0.5, 0.5 + bounce, 0.1 + Math.sin(t) * 0.1);
         leftFoot.rotation.x = 0; rightFoot.rotation.x = 0;
-        rightFoot.position.set(0.5, 0.5 + bounce, 0.1 + Math.cos(t)*0.1);
-        
+        rightFoot.position.set(0.5, 0.5 + bounce, 0.1 + Math.cos(t) * 0.1);
+
         if(!isFollowingCursor) {
             leftFlame.scale.y = 1.0 + Math.sin(t*10)*0.2;
             rightFlame.scale.y = 1.0 + Math.sin(t*10)*0.2;
         }
-        
+
         targetScale.set(1.0, 1.0, 1.0);
-        
+
+        leftEye.scale.y += (eyePulse - leftEye.scale.y) * 0.08;
+        rightEye.scale.y += (eyePulse - rightEye.scale.y) * 0.08;
+        leftEye.scale.x += (1.0 - leftEye.scale.x) * 0.05;
+        rightEye.scale.x += (1.0 - rightEye.scale.x) * 0.05;
+        cheekMat.emissiveIntensity += (cheekPulse * 1.5 - cheekMat.emissiveIntensity) * 0.08;
+        mouth.scale.y += (mouthY - mouth.scale.y) * 0.06;
+
         if (Math.random() > 0.99) {
             leftEye.scale.y = 0.1; rightEye.scale.y = 0.1;
-        } else {
-            leftEye.scale.y += (1.0 - leftEye.scale.y) * 0.3;
-            rightEye.scale.y += (1.0 - rightEye.scale.y) * 0.3;
         }
     }
 
@@ -261,7 +346,10 @@ export function triggerActionAnimation(type) {
 export function checkTarget() {
     state.affection = Math.min(100, state.affection + 15);
     state.mood = Math.min(100, state.mood + 10);
-    
+    state.learning = Math.min(100, state.learning + 6);
+    state.experience += 5;
+    state.saveProgress?.();
+
     if(Math.random() > 0.5) {
         triggerActionAnimation('dancing');
         if(typeof stopDanceMusic !== 'undefined') window.playDanceMusic?.();
@@ -271,7 +359,7 @@ export function checkTarget() {
     
     const bubble = document.getElementById('pet-speech-bubble');
     if(bubble) {
-        bubble.innerText = "Beep Boop! ✨🚀";
+        bubble.innerText = "Learning from touch... connection deepened! 💖";
         bubble.classList.remove('hidden');
         clearTimeout(bubble.timeoutId);
         bubble.timeoutId = setTimeout(() => { bubble.classList.add('hidden'); }, 6000);

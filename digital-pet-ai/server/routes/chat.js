@@ -6,10 +6,10 @@ const router = express.Router();
 router.post('/', async (req, res) => {
     try {
         // We gracefully accept both new 'messages' array and old cached 'message' string
-        const { messages, message, petState } = req.body;
+        const { messages, message, petState, context } = req.body;
         const historyPayload = messages || message || "Hello";
         
-        const reply = await generatePetResponse(historyPayload, petState);
+        const reply = await generatePetResponse(historyPayload, petState, context);
         res.json({ reply });
     } catch (error) {
         console.error("Chat route error:", error);

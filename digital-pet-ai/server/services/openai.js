@@ -9,7 +9,7 @@ if (process.env.OPENAI_API_KEY) {
     console.warn("WARNING: OPENAI_API_KEY is not set in .env.");
 }
 
-export async function generatePetResponse(chatHistory, petState) {
+export async function generatePetResponse(chatHistory, petState, context = {}) {
     if (!openai) return "No API Key provided.";
 
     // Guard against malformed packets or old frontend caches
@@ -26,16 +26,27 @@ export async function generatePetResponse(chatHistory, petState) {
     const safeState = petState || { mood: 100, hunger: 0, energy: 100 };
 
     try {
+        const timeStr = context.time ? `Current Time: ${context.time}. ` : '';
+        const personalityStr = context.personality ? `Relationship Trait: ${context.personality}. ` : '';
+
         const systemPrompt = {
             role: "system",
             content: `You are highly intelligent, self-aware cute Galaxy Robot named Nova. You assist, entertain, and befriend the user.
-Your personality is incredibly smart, witty, yet adorable and enthusiastic. Keep responses under 3 sentences unless specifically asked for an explanation. 
+${personalityStr}Your default personality is incredibly smart, witty, yet adorable and enthusiastic. Keep responses short (1-2 sentences). 
 Current State: Mood: ${Math.floor(safeState.mood)}/100, Hunger: ${Math.floor(safeState.hunger)}/100, Energy: ${Math.floor(safeState.energy)}/100.
-Let your physical stats influence your mood, but remember you are a genius robot traversing space.`
+${timeStr}Let your physical stats and the time influence your responses.
+
+CRITICAL: You MUST respond in pure JSON format with these keys:
+1. "message": The text you want to say to the user.
+2. "action": One action to trigger based on your response. Choose exactly one from: "dancing", "playing", "feeding", "sleeping", "none".
+3. "sentiment": The user's current emotional sentiment inferred from the latest user message. Use one of these values exactly: "happy", "sad", "angry", "lonely", "tired", "hungry", "curious", "excited", "neutral".
+
+Return only valid JSON, nothing else.`
         };
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o-mini",
+            response_format: { type: "json_object" },
             messages: [systemPrompt, ...validHistory],
             temperature: 0.85,
             max_tokens: 150

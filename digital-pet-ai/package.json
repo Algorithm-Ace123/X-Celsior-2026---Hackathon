@@ -1,7 +1,7 @@
 {
   "name": "digital-pet-ai",
   "version": "1.0.0",
-  "description": "Digital Pet AI",
+  "description": "Digital Pet AI companion for the 2026 hackathon — an interactive virtual pet experience.",
   "main": "server/server.js",
   "type": "module",
   "scripts": {

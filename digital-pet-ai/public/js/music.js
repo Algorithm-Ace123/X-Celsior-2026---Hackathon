@@ -1,5 +1,7 @@
 let audioCtx;
 let sequenceInterval;
+let analyser;
+let micSource;
 
 export function playDanceMusic() {
     if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -33,4 +35,37 @@ export function playDanceMusic() {
 
 export function stopDanceMusic() {
     clearInterval(sequenceInterval);
+}
+
+export function initAudioReactivity(onLoudSound) {
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+      .then(stream => {
+          if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if(audioCtx.state === 'suspended') audioCtx.resume();
+          
+          micSource = audioCtx.createMediaStreamSource(stream);
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 256;
+          micSource.connect(analyser);
+          
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+          let lastLoudTime = 0;
+          
+          function checkAudio() {
+              analyser.getByteFrequencyData(dataArray);
+              let sum = 0;
+              for(let i=0; i<dataArray.length; i++) sum += dataArray[i];
+              const avg = sum / dataArray.length;
+              
+              const now = Date.now();
+              // Trigger on loud sounds, with a 5 second cooldown
+              if (avg > 40 && (now - lastLoudTime) > 5000) { 
+                  lastLoudTime = now;
+                  onLoudSound(avg);
+              }
+              requestAnimationFrame(checkAudio);
+          }
+          checkAudio();
+      })
+      .catch(err => console.log('[Audio Reactivity] Microphone access disabled or denied', err));
 }
